@@ -8,7 +8,7 @@ A simple microservices architecture demonstration featuring a Python Flask backe
 ┌─────────────────┐    HTTP/REST API    ┌──────────────────┐
 │  Frontend       │◄──────────────────►│  Backend         │
 │  Dashboard      │                     │  User API        │
-│  (Port 3000)    │                     │  (Port 5000)     │
+│  (Port 8084)    │                     │  (Port 8086)     │
 └─────────────────┘                     └──────────────────┘
 ```
 
@@ -17,7 +17,7 @@ A simple microservices architecture demonstration featuring a Python Flask backe
 ### Backend Service (`backend_service.py`)
 - **Purpose**: RESTful API for user management
 - **Technology**: Python Flask with CORS support
-- **Port**: 5000 (configurable via `PORT` env var)
+- **Port**: 8086 (configurable via `PORT` env var)
 - **Features**:
   - CRUD operations for user management
   - Health check endpoint
@@ -29,7 +29,7 @@ A simple microservices architecture demonstration featuring a Python Flask backe
 ### Frontend Service (`frontend_service.py`)
 - **Purpose**: Web dashboard for user management
 - **Technology**: Python Flask with HTML templates
-- **Port**: 3000 (configurable via `PORT` env var)
+- **Port**: 8084 (configurable via `PORT` env var)
 - **Features**:
   - Web-based user interface
   - Real-time service status monitoring
@@ -53,17 +53,17 @@ pip install -r requirements.txt
 ```bash
 python backend_service.py
 ```
-The backend API will be available at `http://localhost:5000`
+The backend API will be available at `http://localhost:8086`
 
 ### 3. Start the Frontend Service
 In a new terminal:
 ```bash
 python frontend_service.py
 ```
-The web dashboard will be available at `http://localhost:3000`
+The web dashboard will be available at `http://localhost:8084`
 
 ### 4. Access the Application
-Open your web browser and navigate to `http://localhost:3000` to access the user management dashboard.
+Open your web browser and navigate to `http://localhost:8084` to access the user management dashboard.
 
 ## 📚 API Documentation
 
@@ -106,21 +106,21 @@ GET  /api/frontend-stats    # Frontend service stats
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `PORT` | 5000 (backend), 3000 (frontend) | Port to run the service |
+| `PORT` | 8086 (backend), 8084 (frontend) | Port to run the service |
 | `DEBUG` | False | Enable debug mode |
 | `ENVIRONMENT` | development | Environment name |
-| `BACKEND_URL` | http://localhost:5000 | Backend service URL (frontend only) |
+| `BACKEND_URL` | http://localhost:8086 | Backend service URL (frontend only) |
 
 ### Example Configuration
 ```bash
 # Backend
-export PORT=5000
+export PORT=8086
 export DEBUG=true
 export ENVIRONMENT=production
 
 # Frontend
-export PORT=3000
-export BACKEND_URL=http://backend-service:5000
+export PORT=8084
+export BACKEND_URL=http://backend-service:8086
 export ENVIRONMENT=production
 ```
 
@@ -133,7 +133,7 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY backend_service.py .
-EXPOSE 5000
+EXPOSE 8086
 CMD ["python", "backend_service.py"]
 ```
 
@@ -144,8 +144,8 @@ WORKDIR /app
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 COPY frontend_service.py .
-EXPOSE 3000
-ENV BACKEND_URL=http://backend:5000
+EXPOSE 8084
+ENV BACKEND_URL=http://backend:8086
 CMD ["python", "frontend_service.py"]
 ```
 
@@ -157,7 +157,7 @@ services:
     build: .
     dockerfile: Dockerfile.backend
     ports:
-      - "5000:5000"
+      - "8086:8086"
     environment:
       - ENVIRONMENT=docker
   
@@ -165,9 +165,9 @@ services:
     build: .
     dockerfile: Dockerfile.frontend
     ports:
-      - "3000:3000"
+      - "8084:8084"
     environment:
-      - BACKEND_URL=http://backend:5000
+      - BACKEND_URL=http://backend:8086
       - ENVIRONMENT=docker
     depends_on:
       - backend
@@ -195,7 +195,7 @@ spec:
       - name: backend
         image: your-registry/backend:latest
         ports:
-        - containerPort: 5000
+        - containerPort: 8086
         env:
         - name: ENVIRONMENT
           value: "kubernetes"
@@ -208,19 +208,19 @@ spec:
   selector:
     app: backend
   ports:
-  - port: 5000
-    targetPort: 5000
+  - port: 8086
+    targetPort: 8086
 ```
 
 ## 📊 Monitoring
 
 ### Health Checks
-- Backend: `GET http://localhost:5000/health`
-- Frontend: `GET http://localhost:3000/health`
+- Backend: `GET http://localhost:8086/health`
+- Frontend: `GET http://localhost:8084/health`
 
 ### Metrics Endpoints
-- Backend Stats: `GET http://localhost:5000/api/stats`
-- Frontend Stats: `GET http://localhost:3000/api/frontend-stats`
+- Backend Stats: `GET http://localhost:8086/api/stats`
+- Frontend Stats: `GET http://localhost:8084/api/frontend-stats`
 
 ### Sample Health Check Response
 ```json
@@ -251,7 +251,7 @@ spec:
 
 ### Manual Testing
 1. Start both services
-2. Open `http://localhost:3000`
+2. Open `http://localhost:8084`
 3. Add a new user via the web form
 4. Verify the user appears in the table
 5. Delete a user and verify removal
@@ -259,18 +259,18 @@ spec:
 ### API Testing with curl
 ```bash
 # Test backend health
-curl http://localhost:5000/health
+curl http://localhost:8086/health
 
 # Get all users
-curl http://localhost:5000/api/users
+curl http://localhost:8086/api/users
 
 # Create a user
-curl -X POST http://localhost:5000/api/users \
+curl -X POST http://localhost:8086/api/users \
   -H "Content-Type: application/json" \
   -d '{"name":"Test User","email":"test@example.com","role":"user"}'
 
 # Get stats
-curl http://localhost:5000/api/stats
+curl http://localhost:8086/api/stats
 ```
 
 ## 🚨 Troubleshooting
@@ -278,15 +278,15 @@ curl http://localhost:5000/api/stats
 ### Common Issues
 
 #### Frontend can't connect to backend
-- Verify backend is running on port 5000
+- Verify backend is running on port 8086
 - Check `BACKEND_URL` environment variable
 - Ensure no firewall blocking connections
 
 #### Port already in use
 ```bash
 # Find process using port
-lsof -i :5000
-lsof -i :3000
+lsof -i :8086
+lsof -i :8084
 
 # Kill process if needed
 kill -9 <PID>
